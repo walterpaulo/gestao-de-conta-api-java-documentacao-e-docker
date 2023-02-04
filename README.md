@@ -27,6 +27,18 @@ http://localhost:8080/swagger-ui/index.html
 ./destroy
 ```
 
+## Commandos dockers-compose
+
+### Start
+```
+docker-compose up -d
+```
+
+### Stop
+```
+docker-compose down
+```
+
 ## Commandos dockers
 
 ### Access container
