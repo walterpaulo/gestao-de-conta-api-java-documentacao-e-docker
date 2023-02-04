@@ -1,0 +1,37 @@
+version: '3.1'
+networks:
+  mundoazul-network:
+    driver: bridge
+
+services:
+  mundoazuldb:
+    image: postgres
+    container_name: mundoazuldb
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DATABASE}
+    ports:
+      - "5432:5432"
+    restart: always
+    env_file:
+      - .env
+    networks:
+      - mundoazul-network
+    volumes:
+      - todosdb:/var/lib/postgresql/data
+  # mundoazulapi:
+  #   build:
+  #     context: .
+  #   container_name: mundoazulapi
+  #   networks:
+  #     - mundoazul-network
+  #   ports:
+  #     - "8080:8080"
+  #   restart: always
+  #   depends_on:
+  #     - mundoazuldb
+  #   env_file:
+  #     - .env
+volumes:
+  todosdb:
