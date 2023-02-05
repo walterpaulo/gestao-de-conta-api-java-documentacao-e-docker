@@ -9,9 +9,11 @@ import org.springframework.web.HttpMediaTypeNotSupportedException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.context.request.WebRequest;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
 import com.example.demo.errors.exception.ModelNotFoundException;
+import com.example.demo.models.model_views.Response;
 
 @ControllerAdvice
 public class RestExceptionHandler extends ResponseEntityExceptionHandler {
@@ -39,5 +41,12 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
         .message(e.getCause().getMessage())
         .build();
     return new ResponseEntity<>(errorDetails, HttpStatus.BAD_REQUEST);
+  }
+
+  @ExceptionHandler(MethodArgumentTypeMismatchException.class)
+  protected ResponseEntity<Response<?>> handleMethodArgumentTypeMismatchException(MethodArgumentTypeMismatchException e) {
+    Response<?> response = new Response<>();
+    response.setErros(e.getCause().getMessage());
+    return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
   }
 }

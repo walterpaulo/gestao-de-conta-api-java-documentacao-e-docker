@@ -2,6 +2,7 @@ package com.example.demo.controllers;
 
 import java.util.List;
 
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
@@ -15,7 +16,11 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+
+import com.example.demo.errors.exception.ModelNotFoundException;
 import com.example.demo.models.Conta;
+import com.example.demo.models.dto.ContaDto;
+import com.example.demo.models.model_views.Response;
 import com.example.demo.services.ContaService;
 
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -31,8 +36,18 @@ public class ContaController {
     private final ContaService service;
     
     @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<?> create(@RequestBody Conta conta){
-        return new ResponseEntity<>(service.create(conta), HttpStatus.CREATED);
+    public ResponseEntity<Response<Conta>> create(@RequestBody ContaDto conta){
+        Response<Conta> response = new Response<Conta>();
+        try {
+            response.setData(service.create(conta));
+            
+        } catch(ModelNotFoundException e){
+            response.setErros(e.getMessage());
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
 
     @PutMapping(consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
@@ -45,15 +60,28 @@ public class ContaController {
     }
 
     @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<?> all(  @PageableDefault(
-    page = 0,
-    size = 10) Pageable page){
-        return new ResponseEntity<>(service.findAll(page), HttpStatus.OK);
+    public ResponseEntity<Response<Page<Conta>>> all(  @PageableDefault( page = 0,
+            size = 10) Pageable page){
+        Response<Page<Conta>> response = new Response<>();
+        response.setData(service.findAll(page));
+        return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
     @GetMapping(path = "/{id}", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<?> finById(@PathVariable("id") Long id){
-        return new ResponseEntity<>(service.findById(id), HttpStatus.OK);
+    public ResponseEntity<Response<Conta>> finById(@PathVariable("id") Long id){
+        Response<Conta> response = new Response<>();
+        try {
+            response.setData(service.findById(id));
+        } catch (ModelNotFoundException e){
+            e.printStackTrace();
+            response.setErros(e.getMessage());
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+        } catch (Exception e) {
+            e.printStackTrace();
+            response.setErros(e.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+        }
+        return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
     @DeleteMapping(path = "/{id}")
